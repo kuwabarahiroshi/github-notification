@@ -1,0 +1,16 @@
+{
+  "name": "Github push notification",
+  "description": "Shows popup notification on every push on Github",
+  "version": "0.0.1",
+  "manifest_version": 2,
+  "permissions": ["pushMessaging", "background", "notifications", "storage", "*://*/"],
+  "background": {
+    "scripts": ["assets/js/background.js"],
+    "persistent": false
+  },
+  "browser_action": {
+    "default_icon" : "assets/img/github.png",
+    "default_title": "Github notification",
+    "default_popup": "views/popup.html"
+  }
+}
