@@ -5,26 +5,55 @@
  */
 const PUSH_SERVER = 'http://github-notification.192.168.11.16.xip.io';
 
-chrome.runtime.onInstalled.addListener(function () {
-  chrome.pushMessaging.getChannelId(true, function (channel) {
-    var channelId = channel.channelId;
+chrome.pushMessaging.getChannelId(true, function (channel) {
+  var channelId = channel.channelId;
 
-    chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-      if (request.subscribe || request.unsubscribe) {
-        updateSubscription(request, channelId, sendResponse);
-      }
-      return true;
-    });
+  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (request.subscribe || request.unsubscribe) {
+      updateSubscription(request, channelId, sendResponse);
+    }
+    return true;
   });
 });
 
-
 chrome.pushMessaging.onMessage.addListener(function (message) {
-  console.log(message);
-  var notificationId = 'test'; // TODO: should be commit hash
-  chrome.notifications.create(notificationId, {}, function (notificationId) {
+  var payload;
+  try {
+    payload = JSON.parse(message.payload);
+  } catch (e) {
+    console.error(e);
+  }
+
+  if (!payload) return;
+  console.log('payload: ', payload);
+
+  var notificationId = payload.hash
+    , date = new Date(payload.at)
+    , opt = {
+      type: 'basic',
+      title: 'New push from "' + payload.pusher + '"',
+      message: 'repository: ' + payload.url + '\nat: ' + date + '\ncommits: ' + payload.commits,
+      iconUrl: '/assets/img/github.png'
+    };
+
+  var notif = webkitNotifications.createNotification(
+    opt.iconUrl,
+    opt.title,
+    opt.message
+  );
+  console.log(notif);
+  notif.show();
+
+/**
+ * chrome.notifications APIはwindows, chromeOSのみ対応
+ *
+  chrome.notifications.create(notificationId, opt, function (notificationId) {
     console.log('notified');
-  });
+  }).show();
+
+  *
+  */
+
 });
 
 function updateSubscription(request, channelId, sendResponse) {
@@ -36,9 +65,7 @@ function updateSubscription(request, channelId, sendResponse) {
 
   xhr.open('POST', PUSH_SERVER + '/register', true);
   xhr.onreadystatechange = function () {
-    console.log(xhr.readyState, XMLHttpRequest.DONE);
     if (xhr.readyState == XMLHttpRequest.DONE) {
-    console.log(xhr.status);
       if (xhr.status == 200) {
         sendResponse({status: 'OK', subscribed: request});
       } else {
