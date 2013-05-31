@@ -3,7 +3,7 @@
  *
  *
  */
-const PUSH_SERVER = 'http://github-notification.192.168.11.16.xip.io';
+const PUSH_SERVER = 'http://github-notification.herokuapp.com';
 
 chrome.pushMessaging.getChannelId(true, function (channel) {
   var channelId = channel.channelId;
