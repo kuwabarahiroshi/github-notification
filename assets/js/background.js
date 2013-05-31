@@ -3,25 +3,21 @@
  *
  *
  */
-var channelId;
+const PUSH_SERVER = 'http://github-notification.192.168.11.16.xip.io';
+
 chrome.runtime.onInstalled.addListener(function () {
   chrome.pushMessaging.getChannelId(true, function (channel) {
-    channelId = channel.channelId;
-    console.log(channel.channelId);
+    var channelId = channel.channelId;
+
+    chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+      if (request.subscribe || request.unsubscribe) {
+        updateSubscription(request, channelId, sendResponse);
+      }
+      return true;
+    });
   });
 });
 
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-  if (request.notification_server) {
-    registerChannelId(request.notification_server, channelId);
-  }
-});
-
-/*
-chrome.pushMessaging.getChannelId(true, function (channel) {
-  channelId = channel.channelId;
-});
-*/
 
 chrome.pushMessaging.onMessage.addListener(function (message) {
   console.log(message);
@@ -31,17 +27,24 @@ chrome.pushMessaging.onMessage.addListener(function (message) {
   });
 });
 
-function registerChannelId(server, channelId) {
+function updateSubscription(request, channelId, sendResponse) {
   var xhr = new XMLHttpRequest(),
       data = new FormData();
-  data.append('channelId', channelId);
 
-  xhr.open('POST', server, true);
+  request['channelId'] = channelId;
+  data.append('request', JSON.stringify(request));
+
+  xhr.open('POST', PUSH_SERVER + '/register', true);
   xhr.onreadystatechange = function () {
-    if (xhr.readyState == 4) {
-      console.log('registered');
+    console.log(xhr.readyState, XMLHttpRequest.DONE);
+    if (xhr.readyState == XMLHttpRequest.DONE) {
+    console.log(xhr.status);
+      if (xhr.status == 200) {
+        sendResponse({status: 'OK', subscribed: request});
+      } else {
+        sendResponse({status: 'NG', subscribed: request});
+      }
     }
   };
-  console.log('channelId=' + channelId);
   xhr.send(data);
 }

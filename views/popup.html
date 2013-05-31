@@ -2,12 +2,27 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="/assets/css/popup.css" />
 </head>
 <body>
-  <div>
-    <input type="text" value="http://github-push-notif.192.168.11.16.xip.io/register" id="push-server" />
+
+  <div class="global-wrapper">
+    <h1 class="title">Github notification</h1>
+    <dl class="input-pane">
+      <dt class="description">通知を受け取りたいGithubリポジトリのURLを入力</dt>
+      <dd class="input-container">
+        <input type="text" value="http://www.github.com/" id="repository-input" class="ui-input" />
+        <button id="update-btn">
+          <span id="btn-text">press Enter</span>
+          <span id="loading"><img src="/assets/img/icons/loading.gif" alt="" /></span>
+        </button>
+      </dd>
+    </dl>
+
+    <ul id="subscribing"></ul>
   </div>
-  <button id="button">button</button>
+
+  <script src="/assets/js/jquery-2.0.2.min.js"></script>
   <script src="/assets/js/popup.js"></script>
 </body>
 </html>
